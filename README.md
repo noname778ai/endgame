@@ -44,7 +44,7 @@ feedforward** hota hai (recon ke endpoints → injection module ke targets).
 | 🧾 **Evidence engine** | Har probe ka request/response log + replayable curl |
 | 📊 **Findings rollup** | Saare modules ke findings unified `FINDINGS.md` + `findings.json` me |
 | 🎛️ **Profiles** | `ghost / stealth / normal / fast / audit` — rate, concurrency, caps presets |
-| 🔐 **License gate** | Token-based open-core (FREE = P2-P8 recon) — detail niche |
+| 🔐 **License gate** | Token-based lightweight gate — **sab modules FREE** (token: `WASP-FREE-2025-DEMO`) |
 | 🧪 **Selftest** | Offline mock-target self-test — bina internet verify karo |
 
 ---
@@ -66,16 +66,16 @@ kali-tools presence check → `wasp.py doctor` health report.
 ### 2. License Token
 
 ```bash
-export WASP_TOKEN=WASP-FREE-2025-DEMO      # FREE tier = P2-P8 recon block
+export WASP_TOKEN=WASP-FREE-2025-DEMO      # sab 31 modules unlocked (FREE)
 # ya har command ke saath: --token WASP-FREE-2025-DEMO
 ```
 
 | Token | Tier | Valid Till | Notes |
 |---|---|---|---|
-| `WASP-FREE-2025-DEMO` | FREE | 2027-12-31 | **P2-P8 recon block** (7 modules) — sabke liye |
-| PRO tokens | PRO | custom | **P2-P32 poora toolkit** — owner/server se milte hain, publicly distributed NAHI |
+| `WASP-FREE-2025-DEMO` | FREE | 2027-12-31 | **P2-P32 poora toolkit** — sabke liye, sab modules unlocked |
+| PRO tokens | PRO | custom | (future option — abhi FREE jaisa hi access) |
 
-> **Open-core**: FREE tier me P9+ module chalao to clear "PRO tier" message aata hai.
+> **v2.4.1**: SAB modules FREE hain — token sirf ek lightweight gate + audit trail ke liye hai.
 
 > Token **ek baar** daalne par `~/.wasp/token_cache.json` me cache ho jaata hai.
 > Diagnostics commands (`list/doctor/verify/status/selftest/findings/report`) **bina token** bhi chalte hain.
@@ -187,14 +187,13 @@ sudo apt install nmap subfinder amass httpx-toolkit ffuf gobuster dnsutils
 
 ---
 
-## 🔐 License System (Open-Core: Free First, Paid Later)
+## 🔐 License System (Token Gate — SAB Modules FREE)
 
-- **FREE tier**: **P2-P8 recon block** (passive/active recon, content, JS, understanding) — public demo token
-- **PRO tier**: **P9-P32** (auth, injection, API/logic, infra, reporting) — poora toolkit unlock
-  - PRO tokens publicly distribute NAHI hote: owner inhe `~/.wasp/extra_tokens.json` me add karta hai (gitignored) ya server (`WASP_API_URL`) se verify karta hai
-- **Tier gate**: `run`/`runall` par FREE token se P9+ module chalao to clear upgrade message; diagnostics (`list/doctor/verify/selftest`) sabke liye FREE
+- **SAB 31 modules FREE** hain — demo token `WASP-FREE-2025-DEMO` se poora toolkit P2-P32 unlocked
+- Token sirf ek **lightweight gate** hai: engagement audit trail + future options ke liye (hamesha free rahne ka plan hai)
+- `run`/`runall` par token maangta hai; diagnostics (`list/doctor/verify/selftest`) **bina token** chalte hain
 - Har successful gate `license_audit.jsonl` me audit line likhta hai (token sha1-12, raw token kabhi nahi)
-- Roadmap: PRO launch par `WASP_API_URL` license-server + auto token issue (protocol `wasp_license.py` docstring me hai)
+- **Future option (dormant)**: agar kabhi paid tier chahiye to `wasp_license.py` me `FREE_TIER_MAX_PHASE = 32` → `8` kar do — signed tokens / `issue` command / server verify (`WASP_API_URL`) sab pehle se wired hai, 1-line switch
 
 ## 📚 Documentation
 
@@ -208,7 +207,7 @@ sudo apt install nmap subfinder amass httpx-toolkit ffuf gobuster dnsutils
 ## 🗺️ Roadmap
 
 - [ ] P26–P32 real modules (scanval → evidence → chaining → CVSS → remediation → retest → report)
-- [ ] License server + user dashboard (API verify)
+- [ ] (Future option) License server + user dashboard (API verify)
 - [ ] REPORT.md → PDF export
 - [ ] Web docs site (phases/tutorials guide)
 - [ ] Plugin marketplace (community modules)

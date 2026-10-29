@@ -48,7 +48,7 @@ from wasp_core import (Cfg, Scope, ScopeError, Evidence, outdir_for, Checkpoint,
                        read_feedforward, human_size, human_dur, now_human,
                        info, ok, warn, err, head, dim, table, banner, C, VERSION)
 
-APP_VERSION = "2.4.0"  # tier gating: FREE=P2-P8 recon, PRO=P9-P32 + owner-issued tokens
+APP_VERSION = "2.4.1"  # sab modules FREE (tier gating dormant - wasp_license.py me master switch)
 
 # ---------------------------------------------------------------------------
 # MODULE REGISTRY  (name -> file, description, phase, requires_active)

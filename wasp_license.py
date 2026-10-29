@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 r"""
-WASP LICENSE GATE v2.0 (tier-based)
+WASP LICENSE GATE v2.2 (token gate - SAB MODULES FREE)
 ================================================================================
-Token-based licensing (Open-Core: Free First, Paid Later).
+Token-based lightweight gate (v2.4.1: poora toolkit FREE hai).
 
 KAISE KAAM KARTA HAI
 --------------------
 1. Token resolve order :  --token flag  >  WASP_TOKEN env var  >  cached token
                           (~/.wasp/token_cache.json)  >  interactive prompt
-2. Offline demo token (public - sirf FREE tier):
-     WASP-FREE-2025-DEMO   -> FREE tier (P2-P8 recon block)
+2. Offline demo token (public - SAB modules unlocked):
+     WASP-FREE-2025-DEMO   -> poora toolkit P2-P32
 3. Owner-issued tokens : ~/.wasp/extra_tokens.json file me manually entry jodo
      (public code me PRO tokens KABHI nahi hote):
        {"WASP-PRO-XXXX-YYYY": {"tier": "PRO", "expires": "2026-12-31"}}
@@ -22,15 +22,14 @@ KAISE KAAM KARTA HAI
 6. Non-interactive shells (CI/piped) me token na ho to CLEAR error + exit,
    prompt hang NAHI hota (sys.stdin.isatty() check).
 
-TIER POLICY (v2.0 - open-core)
--------------------------------
-  FREE : P2-P8 recon block (7 modules) - public demo token se
-  PRO  : P2-P32 poora toolkit (P9+ sirf yahan unlock hote hain)
-         - P9-P11  auth/sessions/access
-         - P12-P16 injection/xss/ssrf/files/client
-         - P17-P22 api/graphql/ws/logic/authz/replay
-         - P23-P26 misconfig/cloud/controls/scanval
-         - P27-P32 evidence/chaining/cvss/remediation/retest/reporting
+TIER POLICY (v2.4.1 - SAB MODULES FREE)
+---------------------------------------
+  FREE : poora toolkit P2-P32 (demo token se sab unlocked)
+  PRO  : abhi disabled (same access) - future paid option ke liye dormant
+
+  FUTURE ME PAID CHAHIYE? Sirf ye line badlo (niche FREE_TIER_MAX_PHASE):
+     32 -> sab FREE (current)   |   8 -> FREE = sirf P2-P8, baaki PRO
+  Baaki code automatically adjust ho jata hai (messages, gate, selftest).
 
 AUDIT
 -----
@@ -48,14 +47,16 @@ import hashlib
 import hmac as _hmac
 import urllib.request
 
-LICENSE_VERSION = "2.1"
+LICENSE_VERSION = "2.2"
 TOKEN_CACHE_DIR = os.path.join(os.path.expanduser("~"), ".wasp")
 TOKEN_CACHE_PATH = os.path.join(TOKEN_CACHE_DIR, "token_cache.json")
 EXTRA_TOKENS_PATH = os.path.join(TOKEN_CACHE_DIR, "extra_tokens.json")
 
-# FREE tier limit: sirf P2-P8 (block1_recon) chalta hai FREE token se.
-# P9 se aage ke modules PRO tier maangte hain.
-FREE_TIER_MAX_PHASE = 8
+# MASTER SWITCH (v2.4.1): SAB modules FREE - isliye 32 (P32 tak).
+# Future me paid tier wapas chahiye to ise 8 kar do:
+#    FREE_TIER_MAX_PHASE = 8   ->  FREE = sirf P2-P8 recon, P9+ PRO ban jayega
+#    (signed token / issue command / server verify - sab pehle se wired hai)
+FREE_TIER_MAX_PHASE = 32
 
 # ---------------------------------------------------------------------------
 # SIGNED TOKEN SYSTEM (offline PRO tokens - customer ke machine pe verify hota hai)
@@ -112,16 +113,16 @@ def _verify_signed(token):
 # ---------------------------------------------------------------------------
 DEMO_TOKENS = {
     "WASP-FREE-2025-DEMO": {"tier": "FREE", "expires": "2027-12-31"},
-    # TEST-ONLY PRO token (private-repo testing ke liye).
-    # PUBLIC LAUNCH SE PEHLE: is line ko HATA DO - warna koi bhi code padh ke
-    # PRO le lega. Public launch par PRO verify sirf WASP_API_URL se hoga.
+    # v2.4.1: sab FREE hai isliye ye PRO demo token bhi harmless hai
+    # (same access). Future me paid tier wapas karo (FREE_TIER_MAX_PHASE=8)
+    # tab ise hata dena ya server (WASP_API_URL) se verify karna.
     "WASP-PRO-2025-DEMO":  {"tier": "PRO",  "expires": "2027-12-31"},
 }
 
 TIERS = {
-    "FREE": {"name": "Free", "features": "P2-P8 recon block (7 modules), community support"},
-    "PRO":  {"name": "Pro",  "features": "poora toolkit P2-P32 (P9+ unlock) + (future) "
-                                          "no report watermark + priority updates + API verify"},
+    "FREE": {"name": "Free", "features": "poora toolkit P2-P32 (sab 31 modules unlocked)"},
+    "PRO":  {"name": "Pro",  "features": "(future option - abhi FREE jaisa hi) + priority "
+                                          "updates + API verify + no watermark"},
 }
 
 
@@ -157,8 +158,8 @@ def _load_extra_tokens():
 
 
 def tier_allows_phase(tier, phase_num):
-    """FREE tier sirf P2-P8 chala sakta hai; PRO sab kuch. Fail-safe:
-    unknown/garbage tier -> FREE limit lagti hai (fail-closed)."""
+    """Tier vs phase check. v2.4.1: FREE_TIER_MAX_PHASE=32 -> FREE bhi sab chala
+    sakta hai. Fail-safe: unknown/garbage tier -> FREE limit lagti hai (fail-closed)."""
     try:
         p = int(str(phase_num).strip().upper().lstrip("P"))
     except Exception:
@@ -273,7 +274,7 @@ def gate_license(token=None, stream=sys.stderr):
             "    Token do - kisi ek tareeke se:\n"
             "      1) --token WASP-FREE-2025-DEMO\n"
             "      2) export WASP_TOKEN=WASP-FREE-2025-DEMO\n"
-            "    FREE tier = P2-P8 recon block. P9+ modules PRO tier me hain.\n"
+            "    Demo token: WASP-FREE-2025-DEMO  (sab 31 modules unlocked)\n"
             "    Token ek baar daalne par cache ho jaata hai.\n"
             "    Detail: README.md -> License System.\n\n")
         sys.exit(2)
@@ -346,10 +347,11 @@ def self_test():
     print("  signed tok  : %s" % ("OK" if good and good.get("tier") == "PRO" else "FAIL"))
     print("  tampered    : %s" % ("OK (rejected)" if not verify_token(tampered) else "FAIL"))
     tier_ok = (tier_allows_phase("FREE", 2) and tier_allows_phase("FREE", 8)
-               and not tier_allows_phase("FREE", 9) and not tier_allows_phase("FREE", 32)
-               and tier_allows_phase("PRO", 9) and tier_allows_phase("PRO", 2)
-               and not tier_allows_phase("GARBAGE", 9))
-    print("  tier gate   : %s" % ("OK (FREE=P2-P8, PRO=all)" if tier_ok else "FAIL"))
+               and tier_allows_phase("FREE", 9) and tier_allows_phase("FREE", 32)
+               and tier_allows_phase("PRO", 9) and tier_allows_phase("PRO", 2))
+    # NOTE: GARBAGE tier FREE jaisa treat hota hai (fail-closed). All-free mode (32)
+    # me wo bhi sab allowed - paid mode (8) me wahi garbage fail-closed hoga, sahi hai.
+    print("  tier gate   : %s" % ("OK (sab modules FREE unlocked)" if tier_ok else "FAIL"))
     print("  extra tokens: %s (%d owner-issued)" % (EXTRA_TOKENS_PATH, len(_load_extra_tokens())))
     print("  cache path  : %s" % TOKEN_CACHE_PATH)
     return 0
