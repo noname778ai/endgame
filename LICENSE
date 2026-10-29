@@ -1,0 +1,54 @@
+WASP - Web Assessment Script Pack
+Copyright (c) 2026 WASP Framework Contributors
+
+MIT License
+===========
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+ETHICAL USE ADDENDUM (BINDING - koi claim nahi, seedha shart)
+=============================================================
+Ye ek SECURITY TESTING TOOL hai. Download/install karke tum in shartom se
+sahmat ho. In shartom ka ulanghan = license termination (turant):
+
+1. AUTHORIZED TARGETS ONLY
+   Sirf un systems par test karo jinpar tumhare paas EXPLICIT, WRITTEN
+   authorization hai - bug bounty program scope, SOW, ya owner ka written
+   consent. scope.json file tumhara authorization record hai - use sach rakhna
+   ZAROORI hai.
+
+2. KABHI MANA HAI:
+   - Bina permission kisi bhi system par scan/exploit chalana
+   - DoS / resource-exhaustion / brute-force spam
+   - Data chori, delete, ya modify karna
+   - Tool ko illegal activity ke liye use karna (kisi bhi desh ke law ke against)
+
+3. RESPONSIBILITY
+   Har scan ka legal jawabdaar TESTER khud hai. Authors/Contributors ka
+   tumhare use se koi responsibility nahi.
+
+4. REPORTING
+   Jo vulnerabilities mile, unhe responsibly disclose karo - program ki
+   policy ke hisaab se. Data expose na karo, fix hone se pehle public na karo.
+
+5. TERMINATION
+   Ye ethical addendum todti hai to MIT license turant khatam.
+
+"Apni machine, apna authorization, apni zimmedari."

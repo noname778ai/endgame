@@ -1,0 +1,11 @@
+{
+  "engagement": "REPLACE-WITH-ENGAGEMENT-NAME",
+  "authorized": false,
+  "authorization_reference": "REPLACE with program URL / SOW / ticket + date",
+  "targets": ["https://testsite.example.com"],
+  "domains": ["testsite.example.com"],
+  "wildcards": [],
+  "excludes": [],
+  "ips": [],
+  "notes": "TEMPLATE - authorized=false hai. Sirf wohi targets daalo jinpar tumhe WRITTEN permission hai (bug bounty program scope / SOW / owner ka written consent)."
+}

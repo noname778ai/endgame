@@ -1,0 +1,290 @@
+{
+  "_GUIDE": {
+    "what": "WASP ULTRA MASTER CONFIG - har phase (P2->P11 ULTRA modules) ek hi file se control hota hai",
+    "how_use_1": "is file ko apne pack me 'config.json' naam se wasp.py ke bagal me rakho - saare flat keys seedhe Cfg me load ho jaate hain (zero patch)",
+    "how_use_2": "python3 wasp_config.py doctor    -> sanity + RWX + security-model checks (--fix se auto-repair)",
+    "how_use_3": "python3 wasp_config.py profile redteam -> profile values flat keys me likh degi (har phase use karega)",
+    "how_use_4": "python3 wasp_config.py bypass 403 /admin  | bypass jwt <token> | bypass encode '<payload>' | bypass cors | bypass ratelimit",
+    "how_use_5": "python3 wasp_config.py explain [key] -> har key ka Hinglish matlab",
+    "precedence": "CLI flags (--rate etc.) > CLI --profile > profiles.<name> (engine apply) > flat keys yahan > wasp_core defaults",
+    "security_rule": "TARGETS = sirf READ-ONLY (GET/HEAD/OPTIONS) + scope firewall | RESULTS = rwxrwxrwx (0777) | writes = sirf triple opt-in"
+  },
+
+  "_meta": {
+    "name": "WASP-ULTRA-MASTER",
+    "version": "3.0.0",
+    "updated": "2026-10-20",
+    "engine": "wasp_config.py",
+    "schema_known_keys": 115
+  },
+
+  "security_model": {
+    "_doc": "NON-NEGOTIABLE. Layer4: targets par sirf read-only methods. rwx sirf RESULT files par.",
+    "read_only_methods": ["GET", "HEAD", "OPTIONS"],
+    "allow_write_http": false,
+    "i_confirm_write_http": false,
+    "results_rwx": true,
+    "results_base": "engines",
+    "pii_redact": true,
+    "secrets_redact": true,
+    "scope_file": "scope.json",
+    "respect_robots": false,
+    "allow_destructive": false
+  },
+
+  "profile": "balanced",
+
+  "profiles": {
+    "_doc": "engine profile: python3 wasp_config.py profile <name>. core 4 (stealth/normal/fast/audit) bhi wasp.py --profile se chalte hain.",
+    "ghost": {
+      "_hint": "silent recon - WAF ke radar se bahar, sabse slow, sabse kam noise",
+      "rate_limit": 0.8, "jitter": 0.65, "concurrency": 1, "timeout": 25,
+      "retries": 3, "backoff": 2.0, "rotate_user_agents": true, "adaptive_throttle": true,
+      "bypass_enabled": false, "bypass_max_probes": 0,
+      "understand_js_max": 30, "content_total_cap": 1500, "content_global_cap": 4000,
+      "tech_probe_max": 25, "js_max_assets": 60, "access_bypass_probes": 10
+    },
+    "stealth": {
+      "_hint": "chupke chupke - kam rate + UA rotation + jitter zyada",
+      "rate_limit": 1.2, "jitter": 0.55, "concurrency": 2, "timeout": 20, "retries": 3,
+      "rotate_user_agents": true, "adaptive_throttle": true, "bypass_max_probes": 30
+    },
+    "balanced": {
+      "_hint": "default - accuracy aur noise ka best mix",
+      "rate_limit": 4.0, "jitter": 0.35, "concurrency": 8, "timeout": 12, "retries": 2,
+      "rotate_user_agents": false, "bypass_max_probes": 60
+    },
+    "redteam": {
+      "_hint": "engagement mode - bypass engines ON, budgets max, evidence poora",
+      "rate_limit": 8.0, "jitter": 0.25, "concurrency": 12, "timeout": 10, "retries": 2,
+      "rotate_user_agents": true, "ua_rotate_every": 12, "save_bodies": true, "save_replays": true,
+      "max_body_store": 1048576, "bypass_enabled": true, "bypass_max_probes": 120,
+      "content_total_cap": 6000, "content_global_cap": 16000, "js_max_assets": 250,
+      "tech_probe_max": 90, "access_bypass_probes": 80, "access_surface_cap": 60,
+      "surface_top": 100, "surface_budget_minutes": 120.0
+    },
+    "audit": {
+      "_hint": "compliance/audit - poora evidence, kam probing, report-first",
+      "save_bodies": true, "save_replays": true, "max_body_store": 1048576,
+      "rate_limit": 2.0, "bypass_enabled": false, "bypass_max_probes": 0,
+      "findings_min_severity": "low", "access_allow_write_probes": false
+    }
+  },
+
+  "_doc_engine": "== CORE HTTP ENGINE (wasp_core DEFAULT_CONFIG contract) ==",
+  "rate_limit": 4.0,
+  "jitter": 0.35,
+  "concurrency": 8,
+  "timeout": 12,
+  "retries": 2,
+  "backoff": 1.5,
+  "max_requests": 20000,
+  "redirects": 5,
+  "verify_tls": false,
+  "proxy": null,
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0",
+  "rotate_user_agents": false,
+  "ua_rotate_every": 25,
+  "header_order_shuffle": false,
+  "accept_encoding": "gzip, deflate",
+  "custom_headers": {},
+  "retry_status": [429, 500, 502, 503, 504],
+  "adaptive_throttle": true,
+  "negative_cache": true,
+  "resolvers": ["1.1.1.1", "8.8.8.8"],
+  "user_agents": [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+  ],
+
+  "_doc_safety": "== SAFETY / EVIDENCE / REPORTING ==",
+  "allow_active": true,
+  "allow_destructive": false,
+  "allow_write_http": false,
+  "save_bodies": true,
+  "save_replays": true,
+  "max_body_store": 262144,
+  "findings_min_severity": "info",
+  "results_rwx": true,
+  "results_base": "engines",
+  "pii_redact": true,
+  "secrets_redact": true,
+  "respect_robots": false,
+
+  "_doc_bypass": "== SECURITY BYPASS ENGINES (read-only safe; kits offline generate hote hain) ==",
+  "bypass_enabled": true,
+  "bypass_path_variants": true,
+  "bypass_header_spoof": true,
+  "bypass_verb_tamper": true,
+  "bypass_case_toggle": true,
+  "bypass_encoding": true,
+  "bypass_suffix_tricks": true,
+  "bypass_ip_headers": true,
+  "bypass_method_override": true,
+  "bypass_double_confirm": true,
+  "bypass_max_probes": 60,
+  "bypass_jwt_attacks": true,
+  "bypass_cors_probe": true,
+  "stealth_evasion": true,
+
+  "bypass_kit": {
+    "_doc": "engine-only data: wasp_config.py isko use karke OFFLINE variant tables banata hai (koi request nahi bhejta).",
+    "path_variants": [
+      "/{p}", "/{p}/", "/{p}/.", "//{p}", "/./{p}", "/%2e/{p}",
+      "/{P}", "/{p}..;/", "/{p};/", "/{p}/..;/{p}", "/%7b{p}%7d", "/{p}%20",
+      "/{p}%09", "/{p}.json", "/{p};.js", "/api/{p}", "/%2f{p}", "/{p}%2f"
+    ],
+    "ip_headers": [
+      {"X-Forwarded-For": "127.0.0.1"},
+      {"X-Forwarded-For": "10.0.0.1"},
+      {"X-Real-IP": "127.0.0.1"},
+      {"True-Client-IP": "127.0.0.1"},
+      {"X-Originating-IP": "127.0.0.1"},
+      {"X-Custom-IP-Authorization": "127.0.0.1"},
+      {"X-Forwarded-Host": "localhost"},
+      {"X-Host": "localhost"},
+      {"X-Original-URL": "/{p}"},
+      {"X-Rewrite-URL": "/{p}"}
+    ],
+    "method_override_headers": [
+      {"X-HTTP-Method-Override": "GET"},
+      {"X-Method-Override": "GET"},
+      {"X-HTTP-Method": "GET"}
+    ],
+    "encoding_layers": ["url", "double_url", "unicode", "html_entity", "base64", "hex"],
+    "cors_origins": [
+      "null",
+      "https://evil.example.com",
+      "https://{host}.evil.example.com",
+      "https://evil-{host}.example.com"
+    ],
+    "jwt": {
+      "alg_none": true,
+      "kid_injection": true,
+      "kid_payloads": ["../../dev/null", "| id", "x\", \"alg\": \"none\", \"kid\": \"x"],
+      "claim_swap": true,
+      "swap_role_to": "admin",
+      "weak_secret_wordlist": null
+    },
+    "verb_tamper_methods": ["HEAD", "OPTIONS", "PATCH", "TRACE", "X-HTTP-Method-Override:GET"]
+  },
+
+  "_doc_auth": "== AUTH (friendly block; engine isko custom_headers + access_sessions me convert karta hai) ==",
+  "auth": {
+    "mode": "none",
+    "cookie_header": "",
+    "bearer_token": "",
+    "basic_user": "",
+    "basic_pass": "",
+    "header_name": "",
+    "header_value": "",
+    "_doc": "mode: none|cookie|bearer|basic|header. value dalo aur mode badlo - engine khud flat keys banayega."
+  },
+
+  "_doc_wordlists": "== WORDLISTS (paths optional - na ho to builtin synthesis use hota hai) ==",
+  "wordlists": {
+    "content_extra": null,
+    "secrets": null,
+    "params": null,
+    "subdomains": null
+  },
+
+  "_doc_reporting": "== REPORTING (engine extras) ==",
+  "reporting": {
+    "engagement_name": "",
+    "report_title": "WASP ULTRA Engagement Report",
+    "min_severity": "info",
+    "show_filtered_findings": true
+  },
+
+  "_doc_pipeline": "== PIPELINE (module order + enable switches; wasp.py runall isi order me chalega) ==",
+  "pipeline_order": ["understand", "passive", "active", "content", "tech", "js", "surface", "access"],
+
+  "_doc_p2_understand": "== PHASE 2: UNDERSTAND (application understanding) ==",
+  "understand_enabled": true,
+  "understand_js_max": 60,
+
+  "_doc_p3_passive": "== PHASE 3: PASSIVE RECON (OSINT, DNS, URL mining - third-party APIs, target par koi request nahi) ==",
+  "passive_enabled": true,
+  "passive_perm_max": 600,
+  "passive_resolve_max": 3000,
+
+  "_doc_p4_active": "== PHASE 4: ACTIVE RECON (WAF behavioral, TLS deep, vhost, service fingerprints - sab read-only) ==",
+  "active_enabled": true,
+  "active_vhost_max": 48,
+  "active_waf_probe_max": 12,
+  "active_svc_max": 40,
+
+  "_doc_p5_content": "== PHASE 5: CONTENT & ENDPOINT ENUMERATION (dir/wordlist probing + 403 bypass + CMS packs) ==",
+  "content_enabled": true,
+  "content_max_depth": 2,
+  "content_level_cap": 900,
+  "content_total_cap": 4000,
+  "content_global_cap": 12000,
+  "content_dirlist_children": 40,
+  "content_dirlist_max": 200,
+  "content_dirlisting_parse": true,
+  "content_nested_sitemap": true,
+  "content_authwall_detect": true,
+  "content_secret_sniff": true,
+  "content_cms_packs": true,
+  "content_cms_max": 40,
+  "content_api_versions": true,
+  "content_ext_max": 600,
+  "content_case_variants": false,
+  "content_wordlist_file": null,
+
+  "_doc_p6_tech": "== PHASE 6: TECH & ARCHITECTURE ID (signature DB, WAF trigger, GraphQL/OIDC discovery) ==",
+  "tech_enabled": true,
+  "tech_probe_paths": true,
+  "tech_probe_max": 60,
+  "tech_js_fetch": true,
+  "tech_js_fetch_limit": 6,
+  "tech_favicon": true,
+  "tech_behavior": true,
+  "tech_allow_trace": true,
+  "tech_waf_trigger": true,
+  "tech_gql_probe": true,
+  "tech_gql_post_max": 2,
+  "tech_sso_probe": true,
+  "tech_meta_probe": true,
+  "tech_version_extract": true,
+  "tech_observation_cap": 40,
+
+  "_doc_p7_js": "== PHASE 7: JS / CLIENT / API SURFACE (sourcemaps, secrets, endpoints-in-JS) ==",
+  "js_enabled": true,
+  "js_max_assets": 150,
+  "js_max_map_sources": 6,
+  "js_inline_analysis": true,
+  "js_map_probe_max": 40,
+
+  "_doc_p8_surface": "== PHASE 8: ATTACK SURFACE MAPPING (pure analysis, 0 requests) ==",
+  "surface_enabled": true,
+  "surface_min_priority": 22.0,
+  "surface_top": 60,
+  "surface_budget_minutes": 90.0,
+  "surface_dag_max": 12,
+  "surface_diff": true,
+
+  "_doc_p11_access": "== PHASE 11: ACCESS CONTROL / IDOR / BOLA (two-account differential) ==",
+  "access_enabled": true,
+  "access_surface_cap": 30,
+  "access_template_cap": 12,
+  "access_enum_probes": 6,
+  "access_bypass_probes": 40,
+  "access_gql_ops_max": 6,
+  "access_allow_write_probes": false,
+  "access_allow_neighbour_probe": true,
+  "access_sim_confirm": 0.92,
+  "access_sim_suspect": 0.75,
+  "access_own_baseline_sim": 0.985,
+  "access_sessions": [],
+  "access_victim_known_ids": [],
+  "access_manual_requests": [],
+
+  "_doc_access_sessions_format": "access_sessions example: [{\"name\":\"victim\",\"cookie_header\":\"sid=AAA\",\"priv\":\"user\",\"known_ids\":[\"1001\"]},{\"name\":\"admin\",\"cookie_header\":\"sid=BBB\",\"priv\":\"admin\",\"markers\":[\"Admin\"]}]"
+}
