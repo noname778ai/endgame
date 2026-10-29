@@ -1,0 +1,43 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# ---- WASP run output (sab ~/wasp_out me jaata hai, par phir bhi safe) ----
+wasp_out/
+output/
+reports/
+*_out/
+
+# ---- ENGAGEMENT / SCOPE (PRIVATE - kabhi commit na karo) ----
+# scope.json me tumhare REAL authorized targets hote hain - ye PRIVATE hai.
+# Template repo me hai: scope.example.json
+scope.json
+scope.*.json
+!scope.example.json
+
+# ---- CONFIG (local overrides - template wasp_config.json hai) ----
+config.json
+
+# ---- Evidence / state (engagement secrets) ----
+_state/
+evidence_pack/
+license_audit.jsonl
+token_cache.json
+*.jsonl.bak
+
+# ---- Logs / temp ----
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+
+# ---- Editor ----
+.idea/
+.vscode/
+*.sublime-*

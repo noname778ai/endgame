@@ -1,0 +1,11 @@
+# WASP - dependencies
+# --------------------
+# GOOD NEWS: WASP 100% Python standard library par chalta hai.
+# Mandatory dependencies: KOI NAHI (Python 3.8+ kaafi hai)
+
+# Optional (recommended - kuch modules better output dete hain):
+dnspython>=2.0.0        # DNS resolution improvements (passive recon)
+
+# Optional external Kali tools (modules in-stock fallback use karte hain):
+# nmap, subfinder, amass, httpx, ffuf, gobuster - apt se install karo.
+# Detail: README.md -> Optional Tools section.

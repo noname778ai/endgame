@@ -1,0 +1,323 @@
+================================================================================
+WASP  v2.2.0-ULTRA  -  Web Assessment Script Pack
+================================================================================
+Sirf AUTHORIZED security testing ke liye. scope.json me authorized=true hone
+par hi koi module chalega, warna turant abort ho jayega.
+
+WHAT'S NEW IN v2.2 (6-BLOCK RESTRUCTURE)
+--------------------------------------------------------------------------------
+  1. NAYA FOLDER LAYOUT - modules ab phases/ me block-wise organized hain:
+
+       wasp/
+       |-- wasp.py, wasp_core.py, wasp_config.py/json, scope.json
+       |-- phases/
+       |   |-- block1_recon/      P2-P8   (understand, passive, active,
+       |   |                               content, tech, js, surface)
+       |   |-- block2_auth/       P9-P11  (auth, sessions, access)
+       |   |-- block3_input/      P12-P16 (inject, xss, client, ssrf, files)
+       |   |-- block4_api_logic/  P17-P22 (api, graphql, ws, logic, authz, replay)
+       |   |-- block5_infra/      P23-P25 (misconfig, cloud, controls)
+       |   \-- block6_report/     P27-P32 (upcoming)
+       \-- tests/                 har module ka offline self-test suite
+
+  2. P19-P25 REGISTERED - ab saare 24 modules (P2-P25) wasp.py se chalte hain:
+       ws(P19) logic(P20) authz(P21, pehle mod_auth_v23.0.0.py)
+       replay(P22, pehle mod_replay_v24.0.0.py) misconfig(P23) cloud(P24)
+       controls(P25)
+
+  3. NAYA: BLOCK-WISE RUN - poora block ek command me:
+
+       python3 wasp.py run --block 2        # auth/sessions/access (bounty block!)
+       python3 wasp.py run --block 1        # saara recon
+       python3 wasp.py runall --block 3     # injection pipeline
+       python3 wasp.py list                 # blocks table bhi dikhega
+
+  4. DROP-IN SUPPORT - naya module banaye to usse phases/<block>/ me rakho
+     (ya seedha root me) aur REGISTRY/RUN_ORDER/PHASE_ALIAS/BLOCKS me entry
+     add karo - load_mod() dono jagah se dhundhega.
+
+  5. STANDALONE RUN FIX - ab `python3 phases/block2_auth/mod_auth.py` jaisa
+     direct run bhi kaam karta hai (module khud apne aap root ko sys.path me
+     add kar leta hai).
+
+WHAT'S NEW IN ULTRA (v2.1 vs v2.0)
+--------------------------------------------------------------------------------
+  wasp.py (CLI) - 7 se 16 commands:
+    run / runall / status / reset / verify / doctor / selftest / list
+    + findings   : cross-module findings rollup -> findings.json + FINDINGS.md
+    + report     : poora engagement REPORT.md (modules + findings + evidence + chain)
+    + chain      : phase feedforward chain ka visual map
+    + wizard     : scope.json + config.json interactive builder
+    + tune       : config.json me profile preset likho (backup ke saath)
+    + cache      : probe cache stats/clear (+ stored sessions list)
+    + evidence   : per-module request counts + --tail N live tail
+  Naye flags:
+    --module 5 == --module content (phase-number alias 2-10)
+    --profile stealth|normal|fast|audit (env WASP_PROFILE)
+    --rate --jitter --concurrency --timeout --max-requests --proxy
+    --yes (non-interactive), --json (status/findings), --no-net, doctor --fix
+    reset --all / --cache / --sessions / --hard
+  wasp_core.py (engine) - purani API 100% same, naye UPGRADES:
+    Profiles (stealth/fast/audit)     apply_profile()
+    Secrets engine (23 patterns)      SECRET_PATTERNS + scan_secrets() [REDACTED]
+    Findings engine                   make_finding / aggregate_findings /
+                                      write_findings_report() -> FINDINGS.md
+    Robots/Sitemap parsers            parse_robots / parse_sitemap /
+                                      fetch_robots_sitemaps
+    Wordlist engine                   EMBEDDED_CONTENT_WORDS (210+) + load_words()
+    WAF/CDN signatures (15)           waf_signature()
+    Security headers analyzer         analyze_security_headers()
+    Cookie flags analyzer             analyze_cookie_flags()
+    Redirect chain follower           redirect_chain()
+    DNS resolve helper                dns_resolve()
+    HTML/JS extractors                extract_links / extract_js_urls /
+                                      extract_comments / meta_generator / find_csrf
+    JWT inspector (no-verify)         jwt_decode()
+    Burp raw request import           parse_raw_request()
+    Sensitive param hints             SENSITIVE_PARAM_HINTS + is_sensitive_param()
+    Session disk persistence          SessionStore (_state/sessions.json)
+    Evidence hardening                collision-proof bodies + Evidence.summary()
+    Stats snapshots                   RateLimiter/Budget.snapshot(),
+                                      HttpClient.stats_snapshot() + head/options
+    Scope hygiene check               Scope.validate() + Scope.all_hosts()
+    Checkpoint integrity scan         checkpoint_healthy() (doctor --fix)
+    Console                           table() / banner() / dim() + NO_COLOR env
+  3 BUGFIXES (v2 ke latent bugs):
+    BF1: allow_redirects=False ab sach me redirect follow NAHI karta
+         (v2 me galat opener select hota tha -> silently auto-follow ho jaata tha;
+         redirect chain ab hamesha manual + scope-checked + per-hop evidence)
+    BF2: evidence raw bodies ek jaise naam par overwrite nahi hote (unique -N)
+    BF3: sirf targets wali scope me bhi apne target hosts authorized hain
+         (v2 me domains/ips khali ho to seed_urls() khaali aa jaata tha)
+  Drop-in compatible: tumhare saare mod_*.py aur wasp_selftest.py bina kisi
+  edit ke ULTRA core par 50/50 selftest PASS karte hain.
+
+--------------------------------------------------------------------------------
+1. FILES
+--------------------------------------------------------------------------------
+  wasp.py                 CLI ULTRA (16 commands, upar dekho)
+  wasp_core.py            shared engine ULTRA (scope firewall, HTTP, evidence,
+                          checkpoint, secrets, findings, analyzers...)
+  wasp_selftest.py        offline mock-target self-test (koi internet nahi chahiye)
+  scope.json              SAFE template (authorized=false) -> tum apna edit karo
+  scope.authorized.example.json   filled-in example
+  config.json             rate/budget/limits (sab tunable)
+  mod_understand.py       Phase 2  application understanding + threat model
+  mod_passive.py          Phase 3  passive recon (CT/archives/DNS)
+  mod_active.py           Phase 4  active recon (probe/edge/vhost/ports/TLS)
+  mod_content.py          Phase 5  content enum + VCS/backup/API artifacts
+  mod_tech.py             Phase 6  tech & architecture ID
+  mod_js.py               Phase 7  JS / client-side / API surface
+  mod_surface.py          Phase 8  attack surface map + priority queue
+  mod_auth.py             Phase 9  authentication testing
+  mod_sessions.py         Phase 10 session & token security
+
+--------------------------------------------------------------------------------
+2. QUICK START
+--------------------------------------------------------------------------------
+  # 0) pehle offline self-test - sab kuch sahi chal raha hai ya nahi
+  python3 wasp.py selftest
+
+  # 1) scope banao (interactive, authorized confirm + profile choose)
+  python3 wasp.py wizard
+     # ya manually: cp scope.authorized.example.json scope.json && nano scope.json
+
+  # 2) pre-flight (scope hygiene + tools + DNS + output dir)
+  python3 wasp.py verify
+
+  # 3) phase-by-phase (resumable; phase number bhi chalega)
+  python3 wasp.py run --module understand        # P2
+  python3 wasp.py run --module passive           # P3
+  python3 wasp.py run --module active            # P4
+  python3 wasp.py run --module content           # P5  (ya: --module 5)
+  python3 wasp.py run --module tech              # P6
+  python3 wasp.py run --module js                # P7
+  python3 wasp.py run --module surface           # P8
+  python3 wasp.py run --module auth              # P9
+  python3 wasp.py run --module sessions          # P10
+
+  # ya poora pipeline ek command me (complete modules SKIP hote hain)
+  python3 wasp.py runall
+
+  # WAF tight ho? stealth preset: 1.2 rps + jitter + UA rotation + retries
+  python3 wasp.py run --module 5 --profile stealth
+  # ya single-run overrides:
+  python3 wasp.py run --module content --rate 2 --max-requests 5000 --proxy http://127.0.0.1:8080
+
+  # 4) progress / results
+  python3 wasp.py status                        # table + findings count (--json bhi)
+  python3 wasp.py findings --min-sev medium     # cross-module rollup
+  python3 wasp.py evidence --tail 20            # live request tail
+  python3 wasp.py chain                         # kya phase kya feed karta hai
+  python3 wasp.py report                        # engagement REPORT.md
+
+  # 5) environment shak me ho to
+  python3 wasp.py doctor                        # files/checkpoints/cache/integrity
+  python3 wasp.py doctor --fix                  # corrupt checkpoints auto-clean
+
+--------------------------------------------------------------------------------
+3. OUTPUT LAYOUT
+--------------------------------------------------------------------------------
+  ~/wasp_out/<engagement>/<module>/
+      <module>.json            full structured result
+      *.txt                    flat, human-readable exports
+      feedforward.json         "kya bana -> next phase me kahan use hoga"
+      MANIFEST.json            is phase ne kya-kya banaya + stats
+      evidence/requests.jsonl  har request ka index (status, len, timing)
+      evidence/raw/            raw response bodies (ab overwrite nahi hote)
+      evidence/replay/*.sh     wahi request dobara chalane ke liye curl command
+      _state/checkpoint_*.json resume state
+      _state/results_*.jsonl   per-step cached results
+      _state/sessions.json     (ULTRA) identity cookies - resumable logins
+  ~/wasp_out/<engagement>/_cache/probes.json
+      cross-module cache (ek hi URL dobara probe nahi hota)
+  ~/wasp_out/<engagement>/
+      findings.json            (ULTRA) aggregate findings rollup
+      FINDINGS.md              (ULTRA) severity table report
+      REPORT.md                (ULTRA) poora engagement report
+
+  Wasp.py findings/report/chais --out DIR --engagement se bhi chal sakte hain;
+  engagement naam scope.json se aata hai.
+
+--------------------------------------------------------------------------------
+4. RESUME / CHECKPOINT (Ctrl+C safe)
+--------------------------------------------------------------------------------
+  Ctrl+C dabao -> state save -> wahi command dobara chalao -> jahan chhoda wahi se.
+
+  python3 wasp.py run --module content          # auto-resume
+  python3 wasp.py run --module content --fresh  # zero se
+  python3 wasp.py status                        # kya ho chuka hai
+  python3 wasp.py reset --module content        # checkpoint delete
+  python3 wasp.py reset --all --cache --sessions # poora safaya (module outputs rahein ge)
+  python3 wasp.py reset --module content --hard  # module output dir bhi delete (confirm)
+
+  Granularity:
+    understand  per-target        passive   per-source
+    active      per-host/stage    content   per-host
+    tech        per-host          js        per-asset
+    surface     analysis-only     auth      per-stage/endpoint
+    sessions    per-token/asset
+
+  Crash safe: checkpoint atomic writes (tmp -> rename). Corrupt ho jaye to
+  doctor pakad leta hai; doctor --fix se saaf karo, phir normal run.
+
+--------------------------------------------------------------------------------
+5. SAFETY (ye engine khud enforce karta hai)
+--------------------------------------------------------------------------------
+  * Scope firewall    - sirf allowed host par request; vhost probing bhi Host name
+                        authorize karta hai, raw IP ko nahi. Out-of-scope = blocked.
+                        (ULTRA BF3: targets me explicitly likhe hosts bhi allowed)
+  * Budget kill-switch- config.max_requests ke baad koi request nahi jayegi.
+  * Adaptive throttle - WAF/429 dikhe to apne aap slow ho jata hai (jitter ke sath).
+  * Read-only default - PUT/DELETE/TRACE kabhi nahi bhejte; upload sirf opt-in.
+  * No secret misuse  - secrets hamesha REDACTED store hote hain (ULTRA scan_secrets
+                        bhi redacted hi return karta hai).
+  * Cross-host redirect par Authorization/Cookie header strip ho jate hain
+    (ULTRA: redirect follow karna ab manual + scope-checked hai - BF1).
+  * Negative cache    - dead host:port ko dobara nahi peeta (noise kam).
+  * allow_destructive - default false; --allow-destructive sirf RoE permit ho tab.
+
+--------------------------------------------------------------------------------
+6. PHASE-WISE OUTPUT -> NEXT PHASE (feedforward)
+--------------------------------------------------------------------------------
+  P2 understand  -> endpoints.txt, api_endpoints.txt, js_urls.txt, forms.json,
+                    secret_hits.json, header_flags.txt, THREAT_MODEL.md
+  P3 passive     -> all_subs.txt, resolved.txt, ips.txt, all_urls.txt,
+                    findings/{urls_with_params,interesting_files,interesting_paths,
+                    js_urls,param_names,sensitive_params,endpoints,api_like,dir_seeds}.txt
+  P4 active      -> live_hosts.txt, open_ports.txt, waf_cdn.txt, vhosts.txt,
+                    tls_report.txt, favicon_hashes.txt, error_templates.txt,
+                    security_headers.txt
+  P5 content     -> all_found.txt, all_dirs.txt, interesting.txt, artifacts_high.txt,
+                    api_endpoints.txt, found_<host>.txt, dirs_<host>.txt
+  P6 tech        -> stack_report.txt, api_style.txt, session_model.txt,
+                    contradictions.txt, cache_layer.txt, error_signatures.txt
+  P7 js          -> endpoints.txt, params.txt, methods.txt, graphql_ops.txt,
+                    websockets.txt, routes.txt, dom_analysis.txt,
+                    authz_client_hints.txt, config_hints.txt, sourcemaps.txt,
+                    secret_hits.json, external_domains.txt
+  P8 surface     -> priority_queue.json, surface_map.md, attack_paths.txt
+  P9 auth        -> auth_endpoints.txt, user_enumeration.json, rate_limit_report.json,
+                    reset_flow_analysis.json, mfa_analysis.json, AUTH_FINDINGS.md
+  P10 sessions   -> session_tokens.json, cookie_flags.json, jwt_report.json,
+                    lifecycle_findings.json, SESSION_FINDINGS.md
+
+  Live routing dekhne ke liye: python3 wasp.py chain
+
+--------------------------------------------------------------------------------
+7. CLI REFERENCE (ULTRA)
+--------------------------------------------------------------------------------
+  list                       module registry + entrypoint detect (AST, safe)
+  run     --module NAME|N    ek module resumable
+          [--fresh] [--profile P] [--rate R] [--max-requests N] [--proxy URL]
+  runall  [--fresh]          saare modules order me (complete SKIP)
+  verify  [--no-net]         scope hygiene + tools + DNS + output writability
+  status  [--json]           modules x state x findings table
+  reset   --module X | --all [--cache] [--sessions] [--hard]
+  doctor  [--fix]            env + files + checkpoint integrity + cache sizes
+  selftest                   offline mock-server test (50 checks)
+  findings [--min-sev SEV] [--json]        rollup -> findings.json + FINDINGS.md
+  report                                  -> REPORT.md (modules+findings+evidence+chain)
+  chain                      feedforward chain map
+  wizard                     scope.json + config.json builder
+  tune    --profile P        config.json preset (backup ke saath)
+  cache   [stats|clear]      probe cache + sessions list
+  evidence [--module X] [--tail N]         request volume + tail
+
+  Env vars: WASP_OUT (output base), WASP_PROFILE (default profile),
+            WASP_WORDS (content wordlist CAP - number), NO_COLOR=1 (plain output)
+
+--------------------------------------------------------------------------------
+8. TROUBLESHOOTING
+--------------------------------------------------------------------------------
+  "SCOPE BLOCKED"                  -> scope.json me authorized=true + targets daalo
+                                      (ya wasp.py wizard chalao)
+  "No in-scope seeds"              -> v2 me ye tab aata tha jab sirf targets thin;
+                                      ULTRA BF3 fix - agar phir bhi aaye to
+                                      domains/ips bhi bhar do
+  "no response" sab targets par     -> host down / TLS / proxy galat / out-of-scope
+  Phase 5 bahut slow                -> WASP_WORDS=1500 python3 wasp.py run --module content
+                                      (ya config me content_total_cap kam karo)
+  Phase 5 false positives           -> server 200-on-missing deta hai; engine similarity
+                                       se filter karta hai; content_total_cap badhao
+  WAF block kar raha hai            -> --profile stealth (rate+jitter+UA rotation);
+                                      phir bhi 403s aaye to modules unhe evidence
+                                      me record karte hain, blind force mat karo
+  nmap permission error             -> nmap XML nahi mila to socket scan fallback chalta hai
+  httpx python vs ProjectDiscovery  -> export PATH="$HOME/go/bin:$PATH"
+  Ctrl+C ke baad dobara chalana     -> wahi command; --fresh sirf jab zero se chahiye
+  corrupt checkpoint                -> python3 wasp.py doctor --fix
+  findings khaali                   -> modules poore hue? status dekho; threshold
+                                      --min-sev info karke dekho
+  report nahi bana                  -> pehle kam se kam ek module complete karo
+  Sab kuch verify karna             -> python3 wasp.py selftest  (50 checks)
+
+--------------------------------------------------------------------------------
+9. SELFTEST KYA CHECK KARTA HAI (offline, 127.0.0.1 mock)
+--------------------------------------------------------------------------------
+  engine : scope firewall, excludes, budget kill-switch, murmur3, soft-404 math
+  P2     : tech detect, missing headers, forms+csrf+file, cookie flags, JS, secrets(redacted)
+  P5     : soft-404 filter precision, .env/.git/swagger artifacts, robots+sitemap parse
+  P6     : stack confidence, session model, api style
+  P7     : endpoints, methods, websocket, graphql ops, DOM sinks/sources, authz hints,
+           sourcemap unpack, secret dedupe, external-domain filtering
+  resume : dobara chalane par steps skip + fast
+
+  ULTRA bonus: wasp_selftest.py na mile to wasp.py khud 27 engine-checks offline
+  chalata hai (scope/checkpoint/evidence/parsers/analyzers/session-store sab).
+
+--------------------------------------------------------------------------------
+10. MODULE CONTRACT (authors ke liye)
+--------------------------------------------------------------------------------
+  Har mod_<name>.py ek entrypoint deta hai:
+      def run(cfg, scope, base_out): ...
+  Boilerplate:
+      out, ev, http, cp = wasp_core.module_ctx(cfg, scope, base_out, "<name>")
+  Findings ULTRA format me banao taaki aggregate ho:
+      wasp_core.make_finding("<name>", title, severity, target=..., detail=...)
+  Findings ko <name>.json me "findings": [...] key ke saath save karo -
+  wasp.py findings/report automatically pick kar lenge.
+  wasp.py list AST se entrypoints detect karta hai (import kiye bina, safe).
+
+Authorized testing only. Scope ke bahar kuch bhi mat chalao.
+================================================================================

@@ -1,0 +1,81 @@
+================================================================================
+WASP RESUME / CHECKPOINT SYSTEM  (Ctrl+C safe, crash safe, power-loss safe)
+   v2.1.0-ULTRA edition
+================================================================================
+
+PROBLEM
+  Bade phases (Phase 5 content enum) 1-2 ghante chalte hain. Bich me Ctrl+C,
+  network drop ya laptop band -> pehle poora kaam zero se shuru karna padta tha.
+
+SOLUTION
+  Har module apni progress disk par save karta hai - HAR COMPLETED STEP ke baad.
+  Agli baar wahi command -> jo step ho chuka hai woh SKIP + uska cached result reuse.
+
+STATE
+  ~/wasp_out/<engagement>/<module>/_state/
+      checkpoint_<module>.json   -> konsa step done (atomic write: tmp -> rename)
+      results_<module>.jsonl     -> har step ka actual result (append-only)
+      sessions.json              -> (ULTRA) identity cookies - resumable logins
+
+  Atomic write ki wajah se power-loss par bhi file corrupt nahi hoti.
+
+GRANULARITY
+  understand (P2) : per-target      passive    (P3) : per-source
+  active     (P4) : per-host+stage  content    (P5) : per-host
+  tech       (P6) : per-host        js         (P7) : per-asset   (sabse granular)
+  surface    (P8) : analysis-only   auth       (P9) : per-stage+endpoint
+  sessions  (P10) : per-token/asset
+
+  Matlab: Phase 5 me 20 hosts me se 13 ho gaye, Ctrl+C dabaya ->
+  agli baar sirf bache 7 hosts process honge.
+
+USE
+  1) auto-resume run     : python3 wasp.py run --module content
+  2) Ctrl+C dabaya?      : wahi command dobara -> "RESUME: N steps already done"
+  3) status              : python3 wasp.py status        (findings count bhi)
+                           python3 wasp.py status --json (machine-readable)
+  4) zero se shuru       : python3 wasp.py run --module content --fresh
+     ya sirf reset       : python3 wasp.py reset --module content
+  5) poora pipeline      : python3 wasp.py runall   (complete modules SKIP hote hain)
+     sab redo            : python3 wasp.py runall --fresh
+
+ULTRA RESET OPTIONS
+  python3 wasp.py reset --module 5              # ek module ka checkpoint
+  python3 wasp.py reset --all                   # saare modules ke checkpoints
+  python3 wasp.py reset --all --cache           # + cross-module probe cache clear
+  python3 wasp.py reset --all --sessions        # + stored identity cookies clear
+  python3 wasp.py reset --module content --hard # module ka poora output dir (confirm)
+
+ULTRA INTEGRITY (doctor)
+  Corrupt checkpoint (half-written JSON, disk full, etc.) ab chupke se ignore
+  nahi hota - doctor pakad leta hai:
+      python3 wasp.py doctor        # sab engagements scan + report
+      python3 wasp.py doctor --fix  # corrupt files delete -> next run fresh step
+  Output me per-engagement: modules count, cache size, sessions size dikhta hai.
+
+SESSIONS (ULTRA)
+  Login-based modules (P9/P10/P11) apne identity cookies _state/sessions.json
+  me save kar sakte hain (wasp_core.SessionStore). Resume ke baad re-login ki
+  zaroorat nahi padti. Note: file tumhare outdir me hai, koi cloud nahi.
+  Clear karne ke liye: wasp.py reset --sessions (ya cache stats me list dekho).
+
+SAFETY
+  * Checkpoint sirf tumhare output dir me - koi cloud nahi.
+  * Scope firewall + request budget resume ke baad bhi active.
+  * Checkpoint me sirf result data (URLs/statuses/findings) - koi credential nahi.
+  * Module code badla aur purana checkpoint galat lage -> reset --module <name>.
+  * Ek module ko ek waqt me ek process chalao (state file shared hai).
+    Alag-alag modules parallel chalane me dikkat nahi.
+
+ERRORS
+  Crash bhi safe: "Module crashed - progress up to the last completed step is saved."
+  Corrupt checkpoint: doctor report karta hai; --fix se clean, phir fresh chalta hai.
+  Double Ctrl+C: force quit (state pehle se saved hai).
+
+QUICK RECOVERY CHEATSHEET
+  Sab ruk gaya?        -> python3 wasp.py status
+  Kahan tak gaya?      -> python3 wasp.py status --json | less
+  Cache khaali dikhe?  -> python3 wasp.py cache stats
+  Evidence kitna bana? -> python3 wasp.py evidence
+  Report chahiye abhi? -> python3 wasp.py report
+================================================================================
